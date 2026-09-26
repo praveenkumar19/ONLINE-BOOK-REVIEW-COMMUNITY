@@ -53,9 +53,11 @@ function AppContent() {
           FLYING BOOKS
       ======================================== */}
       <div className="flying-books-layer">
+
         <FlyingBooks
           theme={darkMode ? "dark" : "light"}
         />
+
       </div>
 
 
@@ -64,7 +66,9 @@ function AppContent() {
       ======================================== */}
       <div className="app-content">
 
-        <BrowserRouter>
+        <BrowserRouter
+          basename="/ONLINE-BOOK-REVIEW-COMMUNITY"
+        >
 
           <ScrollToTop />
 
