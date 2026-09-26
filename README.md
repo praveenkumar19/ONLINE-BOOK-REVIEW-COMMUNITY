@@ -25,6 +25,7 @@ React Router	Page navigation
 CSS3	Styling & responsive design
 Context API	Authentication & theme state
 GitHub Pages	Deployment
+```
 📂 Project Structure
 ONLINE-BOOK-REVIEW-COMMUNITY/
 │
@@ -78,6 +79,7 @@ ONLINE-BOOK-REVIEW-COMMUNITY/
 ├── package.json
 ├── vite.config.js
 └── README.md
+```
 📚 Included Books
 
 The application currently contains Tamil books including:
