@@ -1,0 +1,660 @@
+/* ==========================================================
+   FLYING BOOKS — realistic flapping flight
+
+   How it works
+   ------------
+   A book flies like a bird: the SPINE is the body, and the two
+   halves (cover + pages) are WINGS hinged on the spine.
+
+   Nesting (outer -> inner), one job per layer:
+     .flying-book   travels across the screen, fades in/out, depth blur
+     .lane-y        rises and falls along a smooth sine-like path
+     .lane-z        drifts nearer / farther (scale)
+     .scene         gives THIS book its own perspective
+     .attitude      pitches the nose up when climbing, down when diving
+     .pose          lays the book flat and turns it to face the way it flies
+     .roll          slow bank around the spine
+     .book          body bob, synced with the wing beats
+     .layer         a cover or page, hinged on the spine, flaps
+   ========================================================== */
+
+.flying-books {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  contain: strict;
+
+  background: radial-gradient(
+    ellipse at 50% 40%,
+    rgba(70, 50, 20, 0.15),
+    transparent 70%
+  );
+}
+
+/* ================================
+   1. TRAVEL ACROSS THE SCREEN
+   (opacity / filter live HERE, above every 3D layer,
+    because they would flatten a preserve-3d element)
+================================ */
+
+.flying-book {
+  --w: clamp(46px, 4.6vw, 80px); /* width of ONE wing */
+  --dir: 1;                      /* 1 = flies right, -1 = flies left */
+
+  position: absolute;
+  top: var(--top);
+  left: 0;
+  width: calc(var(--w) * 2);
+  height: calc(var(--w) * 1.4);
+
+  opacity: 0;
+  filter: blur(var(--blur, 0px)) brightness(var(--dim, 1));
+
+  animation: flyLTR var(--duration) linear infinite both;
+  animation-delay: var(--delay);
+  will-change: transform, opacity;
+}
+
+.flying-book.rtl {
+  --dir: -1;
+  animation-name: flyRTL;
+}
+
+@keyframes flyLTR {
+  0%   { transform: translate3d(-22vw, 0, 0); opacity: 0; }
+  7%   { opacity: 1; }
+  93%  { opacity: 1; }
+  100% { transform: translate3d(112vw, 0, 0); opacity: 0; }
+}
+
+@keyframes flyRTL {
+  0%   { transform: translate3d(112vw, 0, 0); opacity: 0; }
+  7%   { opacity: 1; }
+  93%  { opacity: 1; }
+  100% { transform: translate3d(-22vw, 0, 0); opacity: 0; }
+}
+
+/* ================================
+   2. RISE & FALL — smooth swooping path
+   ease-in-out between the peaks = sine wave
+================================ */
+
+.lane-y {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  animation: laneY var(--y-period) ease-in-out infinite;
+  animation-delay: var(--y-delay);
+  will-change: transform;
+}
+
+@keyframes laneY {
+  0%, 100% { transform: translateY(var(--y-amp)); }
+  50%      { transform: translateY(calc(var(--y-amp) * -1)); }
+}
+
+/* ================================
+   3. DEPTH DRIFT — nearer / farther
+================================ */
+
+.lane-z {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform: scale(var(--s));
+  animation: laneZ var(--z-period) ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes laneZ {
+  from { transform: scale(calc(var(--s) * 0.88)); }
+  to   { transform: scale(calc(var(--s) * 1.12)); }
+}
+
+/* ================================
+   4. PER-BOOK 3D SCENE
+================================ */
+
+.scene {
+  position: absolute;
+  inset: 0;
+  perspective: 700px;
+  perspective-origin: 50% 50%;
+}
+
+/* nose up while climbing, nose down while diving.
+   Same period as .lane-y so the two stay in step. */
+.attitude {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: pitch var(--y-period) ease-in-out infinite;
+  animation-delay: var(--y-delay);
+}
+
+@keyframes pitch {
+  0%, 50%, 100% { transform: rotateZ(0deg); }
+  25%           { transform: rotateZ(calc(var(--dir) * -11deg)); }
+  75%           { transform: rotateZ(calc(var(--dir) * 9deg)); }
+}
+
+/* Lay the book flat (spine = body, pointing forward), turn it to
+   face its direction of travel, then tilt the camera slightly down
+   so you can see the wings beat. */
+.pose {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform:
+    rotateX(-24deg)
+    rotateY(calc(var(--dir) * 58deg))
+    rotateX(90deg)
+    rotateZ(180deg);
+}
+
+/* gentle bank around the spine */
+.roll {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: roll 6.5s ease-in-out infinite alternate;
+  animation-delay: var(--y-delay);
+}
+
+@keyframes roll {
+  from { transform: rotateY(-9deg); }
+  to   { transform: rotateY(9deg); }
+}
+
+/* body lifts on each downstroke, dips on each upstroke */
+.book {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: bob var(--flap) ease-in-out infinite;
+  animation-delay: calc(0s - var(--phase));
+}
+
+@keyframes bob {
+  0%   { transform: translateZ(0px); }
+  7%   { transform: translateZ(-2px); }
+  16%  { transform: translateZ(7px); }
+  24%  { transform: translateZ(-1px); }
+  33%  { transform: translateZ(7px); }
+  41%  { transform: translateZ(-1px); }
+  50%  { transform: translateZ(6px); }
+  58%  { transform: translateZ(1px); }
+  70%  { transform: translateZ(0px); }
+  100% { transform: translateZ(0px); }
+}
+
+/* ================================
+   5. WINGS — covers and pages hinged on the spine
+================================ */
+
+.layer {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  transform-style: preserve-3d;
+
+  animation: flap var(--flap) ease-in-out infinite;
+  animation-delay: calc(var(--lag) - var(--phase));
+  will-change: transform;
+}
+
+.layer.right { left: 50%; transform-origin: 0% 50%;   --side: 1; }
+.layer.left  { left: 0;   transform-origin: 100% 50%; --side: -1; }
+
+/* Wing beat: three strong flaps, then a glide with wings in a shallow V.
+   Pages (--k < 1) swing a little less and a little late, so they
+   trail behind the cover like real paper in air. */
+@keyframes flap {
+  0%   { transform: rotateY(calc(var(--side) * var(--k) * -14deg)); }
+  7%   { transform: rotateY(calc(var(--side) * var(--k) * -68deg)); }
+  16%  { transform: rotateY(calc(var(--side) * var(--k) *  28deg)); }
+  24%  { transform: rotateY(calc(var(--side) * var(--k) * -68deg)); }
+  33%  { transform: rotateY(calc(var(--side) * var(--k) *  28deg)); }
+  41%  { transform: rotateY(calc(var(--side) * var(--k) * -62deg)); }
+  50%  { transform: rotateY(calc(var(--side) * var(--k) *  22deg)); }
+  58%  { transform: rotateY(calc(var(--side) * var(--k) * -30deg)); }
+  70%  { transform: rotateY(calc(var(--side) * var(--k) * -18deg)); }
+  85%  { transform: rotateY(calc(var(--side) * var(--k) * -12deg)); }
+  100% { transform: rotateY(calc(var(--side) * var(--k) * -14deg)); }
+}
+
+/* each cover/page is a thin plate, nudged apart so they stack */
+.layer .plate {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(var(--z));
+}
+
+/* covers overhang the pages slightly, like a real hardback */
+.layer.cover .plate { top: -3%; bottom: -3%; }
+.layer.cover.right .plate { right: -3.5%; }
+.layer.cover.left  .plate { left: -3.5%; }
+
+.face {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.face.back { transform: rotateY(180deg); }
+
+.layer.right .face { border-radius: 0 3px 3px 0; }
+.layer.left  .face { border-radius: 3px 0 0 3px; }
+
+/* light falls off when a wing swings down — timed to the wing beat */
+.face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(25, 12, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+
+  animation: shade var(--flap) ease-in-out infinite;
+  animation-delay: calc(var(--lag) - var(--phase));
+}
+
+@keyframes shade {
+  0%   { opacity: 0.05; }
+  7%   { opacity: 0; }
+  16%  { opacity: 0.4; }
+  24%  { opacity: 0; }
+  33%  { opacity: 0.4; }
+  41%  { opacity: 0.02; }
+  50%  { opacity: 0.35; }
+  58%  { opacity: 0.1; }
+  100% { opacity: 0.05; }
+}
+
+/* ---- pages ---- */
+
+.leaf .face {
+  padding: 11% 13%;
+  background-origin: content-box, border-box, border-box;
+  background-clip: content-box, border-box, border-box;
+  background-image:
+    /* lines of text */
+    repeating-linear-gradient(
+      to bottom,
+      rgba(70, 46, 22, 0.34) 0,
+      rgba(70, 46, 22, 0.34) 1px,
+      transparent 1px,
+      transparent calc(var(--w) * 0.07)
+    ),
+    /* shadow in the gutter */
+    linear-gradient(calc(90deg * var(--side)), rgba(80, 50, 15, 0.42), transparent 24%),
+    /* paper */
+    linear-gradient(180deg, #f7ecd0, #eddcb4);
+}
+
+.leaf .face.back {
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(70, 46, 22, 0.3) 0,
+      rgba(70, 46, 22, 0.3) 1px,
+      transparent 1px,
+      transparent calc(var(--w) * 0.07)
+    ),
+    linear-gradient(calc(-90deg * var(--side)), rgba(80, 50, 15, 0.42), transparent 24%),
+    linear-gradient(180deg, #eddcb4, #e2cfa2);
+}
+
+/* ---- covers ---- */
+
+/* inside of the cover (endpaper) */
+.cover .face.front {
+  background:
+    linear-gradient(calc(90deg * var(--side)), rgba(60, 35, 10, 0.5), transparent 26%),
+    #a98b57;
+}
+
+/* outside of the cover — leather, gold tooling, title */
+.cover .face.back {
+  background:
+    linear-gradient(135deg, rgba(255, 235, 180, 0.22), transparent 30%, rgba(0, 0, 0, 0.35)),
+    var(--book-color);
+  border: 1.5px solid rgba(255, 220, 150, 0.45);
+  box-shadow:
+    inset 0 0 0 3px rgba(0, 0, 0, 0.28),
+    inset 0 0 0 4px rgba(240, 200, 120, 0.55);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8% 10%;
+  color: #f8e6b8;
+}
+
+.cover h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: calc(var(--w) * 0.135);
+  line-height: 1.3;
+  margin: 4px 0;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+  overflow-wrap: break-word;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.cover p {
+  font-family: Georgia, serif;
+  font-size: calc(var(--w) * 0.1);
+  margin: 3px 0;
+  font-style: italic;
+  color: #e8c978;
+}
+
+.book-decoration {
+  font-size: calc(var(--w) * 0.16);
+  color: #f0d485;
+  line-height: 1;
+  text-shadow: 0 0 8px rgba(255, 215, 120, 0.9);
+  animation: runeGlow 2s ease-in-out infinite;
+  animation-delay: var(--phase);
+}
+
+.book-decoration.crest { font-size: calc(var(--w) * 0.42); }
+
+/* ---- spine ---- */
+
+.spine {
+  position: absolute;
+  left: 50%;
+  top: -3%;
+  width: calc(var(--w) * 0.16);
+  height: 106%;
+  margin-left: calc(var(--w) * -0.08);
+  transform: translateZ(-3.9px) rotateY(180deg);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 2px;
+
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 14%, rgba(240, 200, 120, 0.85) 14%, rgba(240, 200, 120, 0.85) 16%,
+      transparent 16%, transparent 84%,
+      rgba(240, 200, 120, 0.85) 84%, rgba(240, 200, 120, 0.85) 86%, transparent 86%
+    ),
+    linear-gradient(90deg, #0a0a0a, var(--book-color) 35%, var(--book-color) 65%, #0a0a0a);
+}
+
+/* ================================
+   MAGIC — aura, sparkle trail, falling page scraps
+   (2D layers, they ride along with the book)
+================================ */
+
+.aura {
+  position: absolute;
+  inset: -35%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(255, 220, 140, 0.3) 0%,
+    rgba(255, 200, 100, 0.1) 40%,
+    transparent 70%
+  );
+  animation: auraPulse 2.4s ease-in-out infinite alternate;
+  animation-delay: var(--phase);
+}
+
+@keyframes auraPulse {
+  from { opacity: 0.5; transform: scale(0.9); }
+  to   { opacity: 1;   transform: scale(1.12); }
+}
+
+@keyframes runeGlow {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; text-shadow: 0 0 14px rgba(255, 225, 140, 1); }
+}
+
+.trail {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* sparkles drift BACK from the book (against its direction) */
+.trail .spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 8px;
+  color: #ffe5a8;
+  text-shadow: 0 0 6px #ffcc66, 0 0 14px #ff9d33;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: trailFade 2.6s ease-out infinite;
+  animation-delay: var(--t-delay);
+}
+
+@keyframes trailFade {
+  0%   { transform: translate(0, 0) scale(0.4); opacity: 0; }
+  15%  { opacity: 1; }
+  100% {
+    transform: translate(calc(var(--dir) * var(--tx) * -1), var(--ty)) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* loose bits of paper shaken free, tumbling down */
+.trail .scrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 8px;
+  background: #f1e3bf;
+  border-radius: 1px;
+  opacity: 0;
+  animation: scrapFall 3.6s ease-in infinite;
+  animation-delay: var(--t-delay);
+}
+
+@keyframes scrapFall {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  12%  { opacity: 0.9; }
+  100% {
+    transform: translate(calc(var(--dir) * var(--tx) * -1), 90px) rotate(var(--r));
+    opacity: 0;
+  }
+}
+
+/* ================================
+   AMBIENT DUST MOTES
+================================ */
+
+.particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.particles span {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  color: #ffe8b0;
+  font-size: var(--size, 9px);
+  text-shadow: 0 0 8px #ffcc66, 0 0 18px rgba(255, 170, 60, 0.6);
+  will-change: transform, opacity;
+  animation: sparkle var(--dur, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.5) translateY(0) rotate(0deg); }
+  50%      { opacity: 1;    transform: scale(1.4) translateY(-18px) rotate(180deg); }
+}
+
+/* ================================
+   REDUCED MOTION — hide the books, keep faint dust
+================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .flying-book { display: none; }
+  .particles span { animation: none; opacity: 0.35; }
+}
+
+/* ================================
+   MOBILE — fewer books, no blur
+================================ */
+
+@media (max-width: 768px) {
+  .flying-book.extra { display: none; }
+  .flying-book { filter: none; }
+  .particles span:nth-child(n + 16) { display: none; }
+}
+
+/* ==========================================================
+   LIGHT MODE — young wizard on a broomstick
+   Hidden by default; shown only in light mode.
+   Adjust these selectors to match how YOUR site switches theme.
+========================================================== */
+
+/* The component itself detects light mode (see useIsLight in the JSX)
+   and only renders the wizard then, so no theme selectors are needed.
+   It also adds .is-light to the container. To hide the books in light
+   mode so only the wizard flies, uncomment:
+
+.flying-books.is-light .flying-book { display: none; }
+*/
+
+/* the warm dark-mode haze would just muddy a light page */
+.flying-books.is-light { background: none; }
+
+.wizard-flyer {
+  --wz-delay: 1s;
+  --wz-w: clamp(130px, 15vw, 230px);
+
+  position: absolute;
+  top: 16%;
+  left: 0;
+  width: var(--wz-w);
+  height: calc(var(--wz-w) * 0.6);
+  opacity: 0;
+  animation: wzCross 20s linear infinite both;
+  animation-delay: var(--wz-delay);
+  will-change: transform, opacity;
+}
+
+/* one crossing, then a pause off-screen before the next */
+@keyframes wzCross {
+  0%   { transform: translate3d(-26vw, 0, 0); opacity: 0; }
+  3%   { opacity: 1; }
+  55%  { transform: translate3d(105vw, 0, 0); opacity: 1; }
+  58%  { transform: translate3d(118vw, 0, 0); opacity: 0; }
+  100% { transform: translate3d(118vw, 0, 0); opacity: 0; }
+}
+
+/* the swoop: climb, loop-the-loop, dive, level out (same 20s clock) */
+.wz-lane {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  animation: wzSwoop 20s ease-in-out infinite;
+  animation-delay: var(--wz-delay);
+}
+
+@keyframes wzSwoop {
+  0%   { transform: translateY(5vh)  rotate(-8deg); }
+  14%  { transform: translateY(-5vh) rotate(3deg); }
+  22%  { transform: translateY(-4vh) rotate(-10deg); }
+  34%  { transform: translateY(-4vh) rotate(-360deg); }
+  46%  { transform: translateY(7vh)  rotate(-352deg); }
+  58%  { transform: translateY(0)    rotate(-360deg); }
+  100% { transform: translateY(0)    rotate(-360deg); }
+}
+
+.wz-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 6px 8px rgba(40, 30, 80, 0.25));
+}
+
+/* broom vibrates as it flies */
+.wz-rig { animation: wzBuzz 0.25s linear infinite alternate; }
+@keyframes wzBuzz {
+  from { transform: translateY(-0.7px); }
+  to   { transform: translateY(0.7px); }
+}
+
+/* cloak and scarf tail flutter in the wind */
+.wz-cloak {
+  transform-origin: 96px 58px;
+  animation: wzCloak 0.5s ease-in-out infinite alternate;
+}
+@keyframes wzCloak {
+  from { transform: rotate(-5deg) scaleX(1); }
+  to   { transform: rotate(5deg)  scaleX(1.08); }
+}
+
+.wz-scarf-tail {
+  transform-origin: 103px 51px;
+  animation: wzScarf 0.38s ease-in-out infinite alternate;
+}
+@keyframes wzScarf {
+  from { transform: rotate(-8deg); }
+  to   { transform: rotate(9deg); }
+}
+
+/* bristles sway */
+.wz-bristles {
+  transform-origin: 26px 87px;
+  animation: wzBristles 0.4s ease-in-out infinite alternate;
+}
+@keyframes wzBristles {
+  from { transform: rotate(-4deg); }
+  to   { transform: rotate(4deg); }
+}
+
+/* golden sparks off the bristles */
+.wz-sparks {
+  position: absolute;
+  left: 4%;
+  top: 72%;
+  pointer-events: none;
+}
+
+.wz-sparks span {
+  position: absolute;
+  font-size: 9px;
+  color: #c98a10;
+  text-shadow: 0 0 6px rgba(220, 150, 20, 0.7);
+  opacity: 0;
+  animation: wzSpark 1.6s ease-out infinite;
+  animation-delay: var(--t-delay);
+}
+
+@keyframes wzSpark {
+  0%   { transform: translate(0, 0) scale(0.5); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(1.2); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wizard-flyer { display: none !important; }
+}
+
+@media (max-width: 768px) {
+  .wizard-flyer { --wz-w: clamp(110px, 30vw, 160px); }
+}
