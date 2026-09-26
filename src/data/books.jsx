@@ -1,3 +1,5 @@
+const BOOKS_PATH = `${import.meta.env.BASE_URL}books/`;
+
 const books = [
   {
     id: 1,
@@ -9,7 +11,7 @@ const books = [
     year: 1954,
     rating: 4.9,
     reviews: 1250,
-    image: "/books/ponniyin-selvan.jpg",
+    image: `${BOOKS_PATH}ponniyin-selvan.jpg`,
     readLink: "https://freetamilebooks.com/ebooks/ponniyin_selvan/",
     description:
       "சோழர் வரலாற்றுப் பின்னணியில் அமைந்த கல்கியின் புகழ்பெற்ற வரலாற்று நாவல். அருள்மொழி வர்மன், வந்தியத்தேவன், குந்தவை மற்றும் நந்தினி போன்ற கதாபாத்திரங்களைச் சுற்றி கதை நகர்கிறது."
@@ -25,7 +27,7 @@ const books = [
     year: 1800,
     rating: 4.8,
     reviews: 980,
-    image: "/books/silapathikaram.jpg",
+    image: `${BOOKS_PATH}silapathikaram.jpg`,
     readLink: "https://ta.wikisource.org/wiki/சிலப்பதிகாரம்",
     description:
       "இளங்கோ அடிகள் இயற்றிய தமிழின் ஐம்பெரும் காப்பியங்களில் ஒன்றான சிலப்பதிகாரம். கண்ணகி, கோவலன் மற்றும் மாதவி ஆகியோரின் வாழ்க்கையை மையமாகக் கொண்டு அறம், நீதி மற்றும் சமூக வாழ்வை எடுத்துரைக்கும் புகழ்பெற்ற காப்பியம்."
@@ -41,7 +43,7 @@ const books = [
     year: 1941,
     rating: 4.7,
     reviews: 850,
-    image: "/books/parthiban-kanavu.jpg",
+    image: `${BOOKS_PATH}parthiban-kanavu.jpg`,
     readLink:
       "https://store.pothi.com/book/ebook-kalki-r-krishnamurthy-%E0%AE%AA%E0%AE%BE%E0%AE%B0%E0%AF%8D%E0%AE%A4%E0%AF%8D%E0%AE%A4%E0%AE%BF%E0%AE%AA%E0%AE%A9%E0%AF%8D-%E0%AE%95%E0%AE%A9%E0%AE%B5%E0%AF%81/",
     description:
@@ -58,7 +60,7 @@ const books = [
     year: 1948,
     rating: 4.7,
     reviews: 760,
-    image: "/books/alai-osai.jpg",
+    image: `${BOOKS_PATH}alai-osai.jpg`,
     readLink:
       "https://freetamilebooks.com/ebooks/alai_oosai_1_2/",
     description:
@@ -75,7 +77,7 @@ const books = [
     year: 1970,
     rating: 4.6,
     reviews: 690,
-    image: "/books/sila-nerangalil-sila-manithargal.jpg",
+    image: `${BOOKS_PATH}sila-nerangalil-sila-manithargal.jpg`,
     readLink:
       "https://books.kalachuvadu.com/catalogue/SilaNerankalilSilaManitharkal_1650/",
     description:
@@ -92,7 +94,7 @@ const books = [
     year: 1973,
     rating: 4.6,
     reviews: 620,
-    image: "/books/oru-manithan-oru-veedu-oru-ulagam.jpg",
+    image: `${BOOKS_PATH}oru-manithan-oru-veedu-oru-ulagam.jpg`,
     readLink: "",
     description:
       "ஒரு மனிதனின் வாழ்க்கை, அவனது உறவுகள் மற்றும் சமூகத்துடனான தொடர்பை மையமாகக் கொண்டு எழுதப்பட்ட இலக்கிய நாவல்."
@@ -108,7 +110,7 @@ const books = [
     year: 1999,
     rating: 4.9,
     reviews: 1950,
-    image: "/books/agni-siragugal.jpg",
+    image: `${BOOKS_PATH}agni-siragugal.jpg`,
     readLink:
       "https://www.commonfolks.in/books/d/agni-siragugal-kalachuvadu",
     description:
@@ -125,7 +127,7 @@ const books = [
     year: 1992,
     rating: 4.7,
     reviews: 720,
-    image: "/books/karukku.jpg",
+    image: `${BOOKS_PATH}karukku.jpg`,
     readLink:
       "https://www.kobo.com/in/en/ebook/karukku",
     description:
@@ -142,7 +144,7 @@ const books = [
     year: 1948,
     rating: 4.8,
     reviews: 980,
-    image: "/books/sivagamiyin-sabadham.jpg",
+    image: `${BOOKS_PATH}sivagamiyin-sabadham.jpg`,
     readLink:
       "https://ta.wikisource.org/wiki/சிவகாமியின்_சபதம்",
     description:
@@ -159,7 +161,7 @@ const books = [
     year: 1965,
     rating: 4.6,
     reviews: 700,
-    image: "/books/vanavasam.jpg",
+    image: `${BOOKS_PATH}vanavasam.jpg`,
     readLink:
       "https://books.google.com/books?id=LrIdCAAAQBAJ",
     description:
@@ -176,7 +178,7 @@ const books = [
     year: 2009,
     rating: 4.6,
     reviews: 640,
-    image: "/books/korkai.jpg",
+    image: `${BOOKS_PATH}korkai.jpg`,
     readLink: "",
     description:
       "தமிழகத்தின் கடலோரப் பகுதிகள் மற்றும் பரதவர் சமூகத்தின் வரலாற்று வாழ்க்கையைப் பின்னணியாகக் கொண்டு எழுதப்பட்ட நாவல்."
@@ -192,7 +194,7 @@ const books = [
     year: 1997,
     rating: 4.7,
     reviews: 830,
-    image: "/books/vishnupuram.jpg",
+    image: `${BOOKS_PATH}vishnupuram.jpg`,
     readLink: "",
     description:
       "தத்துவம், வரலாறு, ஆன்மிகம் மற்றும் மனித வாழ்க்கையின் பல்வேறு பரிமாணங்களை இணைக்கும் விரிவான தமிழ் இலக்கியப் படைப்பு."
@@ -208,7 +210,7 @@ const books = [
     year: 1967,
     rating: 4.8,
     reviews: 910,
-    image: "/books/kadal-pura.jpg",
+    image: `${BOOKS_PATH}kadal-pura.jpg`,
     readLink: "",
     description:
       "சோழர் கால கடற்பயணங்கள், அரசியல் நிகழ்வுகள் மற்றும் சாகசங்களை மையமாகக் கொண்ட பிரபலமான வரலாற்று நாவல்."
@@ -224,7 +226,7 @@ const books = [
     year: 1960,
     rating: 4.7,
     reviews: 870,
-    image: "/books/yavan-rani.jpg",
+    image: `${BOOKS_PATH}yavan-rani.jpg`,
     readLink: "",
     description:
       "பண்டைய தமிழகத்தின் அரசியல் மற்றும் கடல் வாணிபப் பின்னணியில் அமைந்த சாண்டில்யனின் வரலாற்றுச் சாகச நாவல்."
@@ -240,26 +242,28 @@ const books = [
     year: 2024,
     rating: 4.5,
     reviews: 580,
-    image: "/books/anbulla-magale.jpg",
+    image: `${BOOKS_PATH}anbulla-magale.jpg`,
     readLink: "",
     description:
       "பெண் கல்வி, சமூக சமத்துவம், அறிவியல் சிந்தனை மற்றும் சமூக மாற்றம் போன்ற கருத்துகளை கடிதங்கள் மற்றும் சிறுகதைகள் வழியாக எடுத்துரைக்கும் தமிழ் நூல்."
   },
-{
-  id: 16,
-  title: "பூக்குழி",
-  searchTitle: "Pookuzhi",
-  author: "பெருமாள் முருகன்",
-  category: "Domestic Fiction",
-  language: "Tamil",
-  year: 2013,
-  rating: 4.2,
-  reviews: 350,
-  image: "/books/pyre.jpg",
-  readLink: "https://en.wikipedia.org/wiki/Pyre_(novel)",
-  description:
-    "பெருமாள் முருகன் எழுதிய பூக்குழி (Pyre) 2013 ஆம் ஆண்டு வெளியான தமிழ் நாவல். குமரேசன் மற்றும் சரோஜாவின் காதல் மற்றும் கலப்புத் திருமணத்தை மையமாகக் கொண்டு சாதி அடிப்படையிலான சமூக அழுத்தம், பாகுபாடு மற்றும் வன்முறையைப் பற்றி நாவல் எடுத்துரைக்கிறது. ஆங்கில மொழிபெயர்ப்பு Aniruddhan Vasudevan அவர்களால் 2016 ஆம் ஆண்டு வெளியிடப்பட்டது."
-}
+
+  {
+    id: 16,
+    title: "பூக்குழி",
+    searchTitle: "Pookuzhi",
+    author: "பெருமாள் முருகன்",
+    category: "Domestic Fiction",
+    language: "Tamil",
+    year: 2013,
+    rating: 4.2,
+    reviews: 350,
+    image: `${BOOKS_PATH}pyre.jpg`,
+    readLink:
+      "https://en.wikipedia.org/wiki/Pyre_(novel)",
+    description:
+      "பெருமாள் முருகன் எழுதிய பூக்குழி (Pyre) 2013 ஆம் ஆண்டு வெளியான தமிழ் நாவல். குமரேசன் மற்றும் சரோஜாவின் காதல் மற்றும் கலப்புத் திருமணத்தை மையமாகக் கொண்டு சாதி அடிப்படையிலான சமூக அழுத்தம், பாகுபாடு மற்றும் வன்முறையைப் பற்றி நாவல் எடுத்துரைக்கிறது. ஆங்கில மொழிபெயர்ப்பு Aniruddhan Vasudevan அவர்களால் 2016 ஆம் ஆண்டு வெளியிடப்பட்டது."
+  }
 ];
 
 export default books;
